@@ -3,6 +3,11 @@
     border: 1px solid black;
 }
 
+/* Ensure that button events target the button rather than anything inside the button */
+button > * {
+    pointer-events: none;
+}
+
 html {
     height: 100%;
 }
