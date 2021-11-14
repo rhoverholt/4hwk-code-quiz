@@ -44,3 +44,17 @@ main {
     width: 100%;
 }
 
+.question-header {
+    margin-bottom: 3%;
+}
+
+.answer-btn {
+    display:block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1%;
+}
+
+.answer-btn:hover {
+    background-color: grey;
+}
