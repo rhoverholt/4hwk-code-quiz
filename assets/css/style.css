@@ -1,0 +1,41 @@
+/* for debugging */
+* { 
+    border: 1px solid black;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    font-size: 100%;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    height: 100%;
+}
+  
+h1 {
+    font-size: 2.5em;
+}
+
+h2 {
+    font-size: 1.875em;
+}
+
+p {
+    font-size: 1em;
+}
+
+header {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+main {
+    position: absolute;
+    top: 25%;
+    text-align: center;
+    height: 100%;
+    width: 100%;
+}
+
