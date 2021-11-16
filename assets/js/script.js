@@ -3,7 +3,7 @@
 /****************************************/
 
 // The amount of time available to answer the questions
-    const startTime = 30;
+    const startTime = 90;
     let timeRemaining = startTime;
 
 // The name of the answer button class and the start of it's ID
@@ -43,7 +43,7 @@
     const questions = [question1, question2, question3, question4, question5];
 
 // The element pointers
-    const navHighScoreArea = document.getElementById('nav-high-score');
+    const navQuizScoreArea = document.getElementById('nav-quiz-score');
     const timerArea = document.getElementById('timer-container');
     const mainArea = document.getElementById('main-container');
     const bodyArea = document.querySelector('body');
@@ -64,7 +64,7 @@ init();
 
 function init() {
     displayChallengeScreen();
-    displayViewHighScores(true);
+    displayViewQuizScores(true);
     displayTimer(startTime);
 }
 
@@ -76,17 +76,17 @@ function displayChallengeScreen() {
     mainArea.innerHTML = initChallengeHTML;
 }
 
-// This can be called to show (true) or hide (false) the View High Scores option
-function displayViewHighScores(isShown) {
+// This can be called to show (true) or hide (false) the View Quiz Scores option
+function displayViewQuizScores(isShown) {
     if (typeof isShown != "boolean") {
-        errorMsg("displayViewHighScores ERROR: invalid input");
+        errorMsg("displayViewQuizScores ERROR: invalid input");
         return;
     }
 
     if (isShown) {
-        navHighScoreArea.innerHTML = "<button id='nav-btn'>View High Scores</button>"
+        navQuizScoreArea.innerHTML = "<button id='nav-btn'>View Quiz Scores</button>"
     } else {
-        navHighScoreArea.innerHTML = "";
+        navQuizScoreArea.innerHTML = "";
     }
 }
 
@@ -147,10 +147,12 @@ function processClick(event) {
         case "start-quiz-btn":
             startQuiz();
             break;
-//        case "nav-btn":
-//           showHighScores();
-//            console.log("Nav button pressed!");
-//            break;
+        case "nav-btn":
+            viewQuizScores();
+            break;
+        case "submit-initials":
+            submitInitials(event);
+            break;
         default:
             if (!checkAnswerBtn(event)) {
                 console.log("What?! " + element.id + " was clicked?");
@@ -166,8 +168,9 @@ function processClick(event) {
 function startQuiz() {
     // Pose a random question -- it's the first, so no worries about repeats
     isQuiz = true;
+    displayViewQuizScores(false);
     poseQuestion(Math.floor(Math.random() * questions.length), []);
-//    startTimer(startTime);
+    startTimer(startTime);
 }
 
 function endQuiz() {
@@ -178,10 +181,101 @@ function endQuiz() {
     displayTimer(timeRemaining);
 
     let endQuizMessage = "<h2>All Done!</h2>"
-    + "<p></p><p>Your final score is " + timeRemaining + ". </p>";
+    + "<p></p><p>Your final score is " + timeRemaining + ". </p>"
+    + "<form>Enter Initials: <input type='text' id=user-initials>"
+    + "<input id='submit-initials' type='submit' value='SUBMIT' /></form>";
 
     mainArea.innerHTML = endQuizMessage;
+
+    let inputFocus = document.getElementById('user-initials');
+    inputFocus.focus();
 }
+
+function submitInitials(event) {
+    event.preventDefault();
+
+    var userEntry = document.getElementById("user-initials");
+    
+    var userInitials = userEntry.value;
+    
+    if (userInitials === "") {
+        alert("Please enter your initials");
+        return;
+    } 
+
+    let currentDate = new Date();
+
+    var userObject = createQuizScore(userInitials, timeRemaining, displayDate(currentDate), displayTime(currentDate));
+
+    var quizScores = JSON.parse(localStorage.getItem("quiz-score"));
+
+    if (quizScores === null) {
+        quizScores = [userObject];
+    } else {
+        quizScores.push(userObject);
+    }
+
+    // Input has been received, let's add this to our list of scores
+    localStorage.setItem("quiz-score", JSON.stringify(quizScores));
+
+    renderQuizScores(quizScores);
+}
+
+function createQuizScore(userInitials, score, date, time) {
+    let quizScore = {
+        userInitials: userInitials,
+        userScore: score,
+        scoreDate: date,
+        scoreTime: time
+    }
+
+    return quizScore;
+}
+
+
+// This is only called when the user clicks to view the quiz scores
+function viewQuizScores() {
+    var quizScores = JSON.parse(localStorage.getItem("quiz-score"));
+    renderQuizScores(quizScores);
+}
+
+function renderQuizScores(quizScores) {
+    
+    let quizScoresHTML = "<h2>Quiz Scores</h2>";
+
+    if (quizScores === null) {
+        quizScoresHTML += "<p>There are no quizzes stored at this time</p>";
+        
+    } else {
+        quizCount = 0;
+
+        while (quizCount < quizScores.length) {
+            // Show the quizzes from last to first, in decreasing time order
+            quizScoresHTML += getQuizHTML(quizScores[quizScores.length - 1 - quizCount++]);
+        }
+    }
+
+    mainArea.innerHTML = quizScoresHTML;
+}
+
+function getQuizHTML(quizScore) {
+
+    if (quizScore === null) {
+        errorMsg("getQuizHTML expected a quiz score parameter");
+        return;
+    }
+    return `<p>${quizScore.userInitials} ${quizScore.userScore} ${quizScore.scoreDate} ${quizScore.scoreDate}</p>`;
+}
+
+// Must be called with an object matching Date()    
+function displayDate(date) {
+    return (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear();
+}
+
+// Must be called with an object matching Date()    
+function displayTime(date) {
+    return date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+} 
 
 function poseQuestion(index, prevAsked) {
     // The questions have been setup as constant objects at the top.
@@ -257,6 +351,9 @@ function wrongAnswer() {
 
     timeRemaining -= 10;
     if (timeRemaining < 0) {timeRemaining = 0}
+
+    // Display the new time immediately; otherwise it feels strange to user
+    displayTimer(timeRemaining);
 
     gradedText = "Previous Answer: Wrong";
 }    
