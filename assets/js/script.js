@@ -2,12 +2,17 @@
 // Define global constants and variables
 /****************************************/
 
-// The amount of time available to answer the questions
-    const startTime = 90;
-    let timeRemaining = startTime;
+// The amount of time available to answer questions or see correct/wrong
+    const startTime = 90; // number of seconds to take the entire quiz
+    let timeRemaining;
+    const timeDisplayAnswerVeracity = 4; // number of seconds to display the correct/wrong status
+    let isNewAnswer; // make sure each answer has the full 2 seconds to display and is not overwritten by a previous answer's stop time.
 
 // The name of the answer button class and the start of it's ID
     const answerBtn = "answer-btn";
+
+// The name of the key for local storage:
+    const localStorageKey = "quiz-score";
 
 // The actual questions to be asked
     const question1 = {
@@ -42,18 +47,16 @@
 
     const questions = [question1, question2, question3, question4, question5];
 
-// The element pointers
+// The key element pointers
     const navQuizScoreArea = document.getElementById('nav-quiz-score');
     const timerArea = document.getElementById('timer-container');
     const mainArea = document.getElementById('main-container');
     const bodyArea = document.querySelector('body');
 
-// Is the quiz underway (should the timer be counting down?)
-    isQuiz = false;
-
-// Text for whether the last answer was correct or not
-    gradedText = "";
-
+// Is the quiz underway and was the last question correct or not
+    let isQuiz = false;
+    let gradedText = null;
+    let answerTimer = null;
 
 /**************************************************************************/
 // The routines used on initial screen load
@@ -63,6 +66,9 @@
 init();
 
 function init() {
+    
+    timeRemaining = startTime;
+
     displayChallengeScreen();
     displayViewQuizScores(true);
     displayTimer(startTime);
@@ -103,7 +109,7 @@ function displayTimer(time) {
         return;
     } 
     
-    timerArea.innerHTML = `Time: ${time}`;
+    timerArea.innerHTML = `<span id="time-hdr">Time: </span>${time}`;
 }
 
 
@@ -153,10 +159,14 @@ function processClick(event) {
         case "submit-initials":
             submitInitials(event);
             break;
+        case "clear-quiz-scores-btn":
+            clearQuizScores();
+            break;
+        case "go-back-btn":
+            init();
+            break;
         default:
-            if (!checkAnswerBtn(event)) {
-                console.log("What?! " + element.id + " was clicked?");
-            }
+                checkAnswerBtn(event); // if it was an answer button, it gets processed; otherwise, ignored. 
             break;
     }
 }
@@ -175,15 +185,19 @@ function startQuiz() {
 
 function endQuiz() {
     isQuiz = false;
-    console.log(`End Quiz Called.  Score = ${timeRemaining}`);
 
-    // If they got the last question wrong, this updates the timer to include the penalty
-    displayTimer(timeRemaining);
+    if (timeRemaining < 1) {
+        gradedText = "Timed Out";
+        var hdrText = "Time's up!"
+    } else {
+        var hdrText = "All Done!"
+    }
 
-    let endQuizMessage = "<h2>All Done!</h2>"
+    let endQuizMessage = "<h2>" + hdrText + "</h2>"
     + "<p></p><p>Your final score is " + timeRemaining + ". </p>"
-    + "<form>Enter Initials: <input type='text' id=user-initials>"
-    + "<input id='submit-initials' type='submit' value='SUBMIT' /></form>";
+    + "<form id='initial-entry-form'>Enter Initials: <input type='text' id=user-initials>"
+    + "<input id='submit-initials' type='submit' value='SUBMIT' /></form>"
+    + `<p id='answer-feedback'>Previous Answer: ${gradedText}</p>`;
 
     mainArea.innerHTML = endQuizMessage;
 
@@ -207,7 +221,7 @@ function submitInitials(event) {
 
     var userObject = createQuizScore(userInitials, timeRemaining, displayDate(currentDate), displayTime(currentDate));
 
-    var quizScores = JSON.parse(localStorage.getItem("quiz-score"));
+    var quizScores = JSON.parse(localStorage.getItem(localStorageKey));
 
     if (quizScores === null) {
         quizScores = [userObject];
@@ -216,7 +230,7 @@ function submitInitials(event) {
     }
 
     // Input has been received, let's add this to our list of scores
-    localStorage.setItem("quiz-score", JSON.stringify(quizScores));
+    localStorage.setItem(localStorageKey, JSON.stringify(quizScores));
 
     renderQuizScores(quizScores);
 }
@@ -235,7 +249,8 @@ function createQuizScore(userInitials, score, date, time) {
 
 // This is only called when the user clicks to view the quiz scores
 function viewQuizScores() {
-    var quizScores = JSON.parse(localStorage.getItem("quiz-score"));
+    var quizScores = JSON.parse(localStorage.getItem(localStorageKey));
+    displayViewQuizScores(false);
     renderQuizScores(quizScores);
 }
 
@@ -245,26 +260,26 @@ function renderQuizScores(quizScores) {
 
     if (quizScores === null) {
         quizScoresHTML += "<p>There are no quizzes stored at this time</p>";
+        quizScoresHTML += "<button id='go-back-btn'>Go Back</button><button id='clear-quiz-scores-btn' disabled>Clear Quiz Scores</button>";
         
     } else {
         quizCount = 0;
 
+        quizScoresHTML += "<table id='score-table'> <tr> <th>Initials</th> <th>Score</th> </tr>"
         while (quizCount < quizScores.length) {
             // Show the quizzes from last to first, in decreasing time order
-            quizScoresHTML += getQuizHTML(quizScores[quizScores.length - 1 - quizCount++]);
+            thisScore = quizScores[quizScores.length - 1 - quizCount++];
+            quizScoresHTML += `<tr><td>${thisScore.userInitials}</td><td>${thisScore.userScore}</td></tr>`
         }
+        quizScoresHTML += "</table></br><button id='go-back-btn'>Go Back</button><button id='clear-quiz-scores-btn'>Clear Quiz Scores</button>";
     }
 
     mainArea.innerHTML = quizScoresHTML;
 }
 
-function getQuizHTML(quizScore) {
-
-    if (quizScore === null) {
-        errorMsg("getQuizHTML expected a quiz score parameter");
-        return;
-    }
-    return `<p>${quizScore.userInitials} ${quizScore.userScore} ${quizScore.scoreDate} ${quizScore.scoreDate}</p>`;
+function clearQuizScores() {
+    localStorage.removeItem(localStorageKey);
+    renderQuizScores(null);
 }
 
 // Must be called with an object matching Date()    
@@ -288,8 +303,6 @@ function poseQuestion(index, prevAsked) {
 
     var thisQuestion = questions[index];
     var thisAnswer = 0;
-
-    console.log(`poseQuestion - Index: ${index}. prevAsked: ${prevAsked}`);
     
     questionHTML = `<p class="question-header">${thisQuestion.questionText}</p>`;
 
@@ -300,8 +313,12 @@ function poseQuestion(index, prevAsked) {
         thisAnswer++;
     }
 
-    // Add a section at the bottom to display correct on wrong
-    questionHTML += `<p class='answer-feedback'>${gradedText}</p>`
+    // Add a section at the bottom to display correct on wrong if a question's already been answered
+
+    if (gradedText != null) {
+        questionHTML += `<p id='answer-feedback'>Previous Answer: ${gradedText}</p>`
+    }
+
     mainArea.innerHTML = questionHTML;
 }
 
@@ -310,8 +327,9 @@ function poseQuestion(index, prevAsked) {
 /*********************************************************/
 
 function checkAnswerBtn(event) {
-    var element = event.target;
+    let element = event.target;
 
+    // if it wasn't an answer button, escape.
     if (answerBtn != element.id.slice(0,answerBtn.length)) {
         return false;
     }
@@ -320,16 +338,37 @@ function checkAnswerBtn(event) {
     let answerChosen = element.id.substring(answerBtn.length + 1);
     let prevAsked = JSON.parse(element.getAttribute ("data-prev-asked"));
     let questionAnswered = prevAsked[prevAsked.length - 1];
-    
-    // did they get the answer right?
-    if (questions[questionAnswered].answerIndex == answerChosen) {
-        console.log(`Congratulations, you answered question ${questionAnswered} correctly!`);
-        correctAnswer();
+
+    // if the answer timer for the previous question is still going, turn it off -- screen text will be overlayed when checking this answer.
+    if (answerTimer != null) {
+        console.log(`answerTimer Cleared: ${answerTimer}`);
+        clearTimeout(answerTimer);
+        answerTimer = null;
     } else {
-        console.log(`Sorry, you answered question ${questionAnswered} wrong.`);
-        wrongAnswer();       
+        console.log(`Answer Timer is null: ${answerTimer}`);
+    }
+   
+    // did they get the answer right?
+    if (questions[questionAnswered].answerIndex == answerChosen) { //  yes, they got it right!
+        gradedText = "Correct";
+
+    } else { // no, they got the question wrong
+
+        gradedText = "Wrong";
+        timeRemaining -= 10;
+        if (timeRemaining < 0) {timeRemaining = 0}
+    
+        // Display the new time immediately; otherwise it feels strange to user
+        displayTimer(timeRemaining);
     }
 
+    // Set a timeout so the answer feedback only stays on the screen for a short time.
+    // Note, this gets cleared above if the user answered a new question before the timer expired.
+        answerTimer = setTimeout(function() {
+        document.getElementById('answer-feedback').remove();
+    }, timeDisplayAnswerVeracity * 1000);
+
+    
  // pose the next question -- it will handle if this was the last one.
     var nextQuestionIndex = poseNextQuestion(prevAsked);
 
@@ -343,26 +382,10 @@ function checkAnswerBtn(event) {
     return true;
 }
 
-function correctAnswer() {
-    gradedText = "Previous Answer: Correct";
-}
-
-function wrongAnswer() {
-
-    timeRemaining -= 10;
-    if (timeRemaining < 0) {timeRemaining = 0}
-
-    // Display the new time immediately; otherwise it feels strange to user
-    displayTimer(timeRemaining);
-
-    gradedText = "Previous Answer: Wrong";
-}    
-
 function poseNextQuestion(prevAsked) {
     
     if (prevAsked.length >= questions.length) {
         // no more questions to ask, we're done!
-        console.log(`Congratulations on answering all of the questions!`);
         return false;
     }
 

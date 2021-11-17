@@ -1,16 +1,41 @@
-/* for debugging */
-* { 
-    border: 1px solid black;
+:root {
+    --button-background: rgb(81, 0, 128); 
+    --button-hover:  rgba(81, 0, 128, 0.5);
+    --button-color: white;
 }
 
 /* Ensure that button events target the button rather than anything inside the button */
-button > * {
-    pointer-events: none;
+button > * {pointer-events: none;}
+
+button, #submit-initials {
+    background-color: var(--button-background);
+    color: var(--button-color);
+    padding: 2px;
+    border: none;
 }
 
-html {
-    height: 100%;
+button:hover, #submit-initials:hover {
+    background-color: var(--button-hover);
+    cursor: pointer;
 }
+
+#clear-quiz-scores-btn:disabled {background-color: var(--button-hover);}
+
+#go-back-btn, #clear-quiz-scores-btn, #start-quiz-btn {margin: 2% 5%;}
+
+#nav-btn {
+/* Reversed the button colors for this */
+    background-color: var(--button-color);
+    color: var(--button-background);
+    margin-left: 10%;
+    width: 100%;
+}
+
+#nav-btn:hover {text-decoration: underline;}
+
+#time-hdr {color: var(--button-background);}
+
+html {height: 100%;}
 
 body {
     font-size: 100%;
@@ -18,48 +43,45 @@ body {
     height: 100%;
 }
   
-h1 {
-    font-size: 2.5em;
-}
+h1 {font-size: 2.5em;}
 
 h2 {
     font-size: 1.875em;
+    margin-bottom: 3%;
 }
 
-p {
-    font-size: 1em;
-}
+p {font-size: 1em;}
 
 header {
     display: flex;
     width: 100%;
     justify-content: space-between;
+    padding: 0 10%;
 }
 
 main {
     position: absolute;
     top: 25%;
     text-align: center;
-    height: 100%;
     width: 100%;
+    padding: 0% 25%;
 }
 
-.question-header {
-    margin-bottom: 3%;
-}
+.question-header {margin-bottom: 3%;}
 
-.answer-btn {
+.answer-btn, .question-header {
     display:block;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 2px;
+    text-align: left;
+    margin-top: 1%;
 }
 
-.answer-btn:hover {
-    background-color: grey;
-}
-
-.answer-feedback {
+#answer-feedback {
     font-style: italic;
     color:gray;
 }
+
+#score-table {display: inline-table;}
+
+th {padding: 0 5px;}
+
+#initial-entry-form {margin-top: 3%;} 
