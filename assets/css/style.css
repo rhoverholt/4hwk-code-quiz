@@ -85,3 +85,13 @@ main {
 th {padding: 0 5px;}
 
 #initial-entry-form {margin-top: 3%;} 
+
+.white-red {
+    background-color: red;
+    color: white;
+}
+
+.red-white {
+    background-color: white;
+    color: red;
+}
