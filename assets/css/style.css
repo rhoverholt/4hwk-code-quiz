@@ -57,9 +57,11 @@ header {
 }
 
 main {
+    position: absolute; /* position and top are how I set a top margin based on height rather than width. */
+    top: 25%;
     text-align: center;
     width: 100%;
-    padding: 25% 25% 0% 25%;
+    padding: 0% 25%; /* Set left and right padding only */
 }
 
 .question-header {margin-bottom: 3%;}
