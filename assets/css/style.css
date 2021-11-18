@@ -1,12 +1,11 @@
+/* Create a few variables for reuse below */
 :root {
     --button-background: rgb(81, 0, 128); 
     --button-hover:  rgba(81, 0, 128, 0.5);
     --button-color: white;
 }
 
-/* Ensure that button events target the button rather than anything inside the button */
-button > * {pointer-events: none;}
-
+/* Format the buttons, including answer choices and view quiz list nav item */
 button, #submit-initials {
     background-color: var(--button-background);
     color: var(--button-color);
@@ -35,12 +34,10 @@ button:hover, #submit-initials:hover {
 
 #time-hdr {color: var(--button-background);}
 
-html {height: 100%;}
-
+/* Setup default font and sizes */
 body {
     font-size: 100%;
     font-family: Georgia, 'Times New Roman', Times, serif;
-    height: 100%;
 }
   
 h1 {font-size: 2.5em;}
@@ -60,15 +57,14 @@ header {
 }
 
 main {
-    position: absolute;
-    top: 25%;
     text-align: center;
     width: 100%;
-    padding: 0% 25%;
+    padding: 25% 25% 0% 25%;
 }
 
 .question-header {margin-bottom: 3%;}
 
+/* format the questions and answer choices to all be left justified with friendly margins and on separate lines */
 .answer-btn, .question-header {
     display:block;
     text-align: left;
@@ -80,12 +76,14 @@ main {
     color:gray;
 }
 
+/* Allow the table to be positioned/justified as text */
 #score-table {display: inline-table;}
 
 th {padding: 0 5px;}
 
 #initial-entry-form {margin-top: 3%;} 
 
+/* format the error message options used when submitting invalid initials */
 .white-red {
     background-color: red;
     color: white;

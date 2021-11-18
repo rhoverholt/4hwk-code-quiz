@@ -1,3 +1,7 @@
+/* This file removes many fundamentals to ensure I'm not relying on specifics within my browser 
+    and instead am specifying all core characteristics.
+*/
+
 * {
     margin: 0;
     padding: 0;
