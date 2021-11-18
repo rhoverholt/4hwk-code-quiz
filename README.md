@@ -25,7 +25,9 @@ THEN I can save my initials and my score
 ```
 ## Application link
 
+https://rhoverholt.github.io/4hwk-code-quiz/
+
 ## Mock-Up
 
 The following image demonstrates the application's loading screen:
-/assets/Entry-page-screenshot.png
+![Code Quiz Loading Screen](https://github.com/rhoverholt/4hwk-code-quiz/blob/main/assets/Entry-page-screenshot.png)
