@@ -36,7 +36,7 @@ button:hover, #submit-initials:hover {
 
 /* Setup default font and sizes */
 body {
-    font-size: 100%;
+    font-size: 24px;
     font-family: Georgia, 'Times New Roman', Times, serif;
 }
   

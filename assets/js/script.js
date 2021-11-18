@@ -21,7 +21,7 @@
 
     const startTime = 90; // number of seconds to take the entire quiz
     let timeRemaining = 90; // Time remaining to complete the quiz
-    const timeDisplayAnswerVeracity = 4; // number of seconds to display the correct/wrong status
+    const timeDisplayAnswerVeracity = 1; // number of seconds to display the correct/wrong status
     let isNewAnswer; // make sure each answer has the full time from above to display and is not overwritten by a previous answer's stop time.
 
     const answerBtn = "answer-btn"; // The name of the answer button class and the start of it's ID
@@ -222,7 +222,7 @@ function startTimer() {
             // Stops execution of the timer
             clearInterval(timerInterval);
             // Calls the function to end the quiz and initiate phase 3
-            endQuiz();
+            endQuiz(false);
         }
   
     }, 1000);
@@ -295,7 +295,10 @@ function checkAnswerBtn(event) {
 
         // penalize the user 10 seconds for their wrong answer
         timeRemaining -= 10;
-        if (timeRemaining < 0) {timeRemaining = 0}
+        if (timeRemaining < 0) {
+            timeRemaining = 0;
+            isQuiz = false;
+        }
     
         // Display the new time immediately; otherwise it feels strange to user
         displayTimer(timeRemaining);
@@ -313,7 +316,7 @@ function checkAnswerBtn(event) {
 
     if (nextQuestionIndex === false) {
         // All questions have been answered
-        endQuiz();
+        endQuiz(true);
         return true;
     }
 
@@ -375,11 +378,16 @@ function poseNextQuestion(prevAsked) {
 
 // Called at the end of phase 2 either when the user answers all questions or time expires
 // Displays the score and asks user to enter their initials.
-function endQuiz() {
+function endQuiz(isComplete) {
     isQuiz = false; // note that the quiz is no longer underway
 
+    // Input validation -- raise an error which escapes if input is invalid
+    if (typeof isComplete !== "boolean") {
+        errorMsg(`Invalid parameter to endQuiz: ${isComplete}`);
+    }
+
     // Display the new screen to the user via setting mainArea.HTML
-    if (timeRemaining < 1) {
+    if (!isComplete) {
         gradedText = "Timed Out";
         var hdrText = "Time's up!"
     } else {
